@@ -1,0 +1,5 @@
+project: donald/crypto
+namespace: brigade
+repository: github.com/deis/empty-testbed
+cloneURL: https://github.com/deis/empty-testbed.git
+
