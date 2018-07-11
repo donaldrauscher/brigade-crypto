@@ -2,7 +2,7 @@
 
 Making a [Brigade](https://brigade.sh/) pipeline that streams cryptocurrency prices into BigQuery 
 
-NOTE: Instructions for setting up a K8s cluster with Brigade [here](https://github.com/donaldrauscher/brigade-build)
+NOTE: Instructions for setting up a K8s cluster with Brigade in 'infrastructure'
 
 1. Create Brigade project with Helm:
 ```

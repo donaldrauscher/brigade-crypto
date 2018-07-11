@@ -1,0 +1,7 @@
+FROM golang:1.8
+
+WORKDIR /go/src/github.com/Azure/
+
+RUN git clone https://github.com/Azure/brigade.git \
+  && cd brigade \
+  && make bootstrap brig
