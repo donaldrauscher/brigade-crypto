@@ -1,3 +1,5 @@
 .idea/**
 .ipynb_checkpoints/**
 secrets.yaml
+infrastructure/terraform.tfstate*
+infrastructure/.terraform/**
