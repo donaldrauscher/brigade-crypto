@@ -33,6 +33,7 @@ events.on("exec", (e, p) => {
   }
 
   j1.tasks = [
+    "set -x",
     "curl https://rest.coinapi.io/v1/quotes/current?filter_symbol_id=_SPOT_ --request GET --header \"X-CoinAPI-Key: $COIN_API_KEY\" -o quotes.json",
     "jq --compact-output '.[]' quotes.json > quotes.ndjson",
     "gsutil cp quotes.ndjson gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson",
