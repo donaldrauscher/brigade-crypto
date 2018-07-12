@@ -29,7 +29,7 @@ events.on("exec", (e, p) => {
 
   j1.env = {
     "COIN_API_KEY": p.secrets.coinAPIKey,
-    "TIMESTAMP": e.payload || 'YYYY-MM-DDTHH:MM'
+    "TIMESTAMP": e.payload.trim() || 'YYYY-MM-DDTHH:MM'
   }
 
   j1.tasks = [
