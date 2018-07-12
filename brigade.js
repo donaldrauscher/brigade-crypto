@@ -29,14 +29,14 @@ events.on("exec", (e, p) => {
 
   j1.env = {
     "COIN_API_KEY": p.secrets.coinAPIKey,
-    "TIMESTAMP": e.payload || 'YYYY-MM-DD HH:MM'
+    "TIMESTAMP": e.payload || 'YYYY-MM-DDTHH:MM'
   }
 
   j1.tasks = [
     "curl https://rest.coinapi.io/v1/quotes/current?filter_symbol_id=_SPOT_ --request GET --header \"X-CoinAPI-Key: $COIN_API_KEY\" -o quotes.json",
     "jq --compact-output '.[]' quotes.json > quotes.ndjson",
-    "gsutil cp quotes.ndjson \"gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson\"",
-    "bq load --replace --source_format=NEWLINE_DELIMITED_JSON crypto.quotes \"gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson\""
+    "gsutil cp quotes.ndjson gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson",
+    "bq load --replace --source_format=NEWLINE_DELIMITED_JSON crypto.quotes gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson"
   ]
 
   j1.run()
