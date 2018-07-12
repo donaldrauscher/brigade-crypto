@@ -1,0 +1,16 @@
+schedule: "*/5 * * * *"
+
+project: "donald/crypto"
+namespace: "brigade"
+
+event: "exec"
+ref: "refs/heads/master"
+
+rbac:
+  enabled: true
+
+image:
+  registry: deis
+  name: brig
+  tag: latest
+  # pullPolicy: IfNotPresent

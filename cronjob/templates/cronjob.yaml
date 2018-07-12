@@ -1,0 +1,87 @@
+{{ $fullname := include "fullname" . }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ $fullname }}
+  labels:
+    app: {{ $fullname }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+    role: cronjob
+spec:
+  schedule: "{{ default "@hourly" .Values.schedule }}"
+  successfulJobsHistoryLimit: {{ default 10 .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 10 .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ $fullname }}
+            role: cronjob
+        spec:
+          serviceAccountName: {{ $fullname }}
+          initContainers:
+          - name: make-payload
+            image: busybox
+            command: ["sh", "-c", "date '+%Y-%m-%dT%H:%M' > /payload/payload.dat"]
+            volumeMounts:
+              - mountPath: /payload
+                name: shared
+          containers:
+          - name: {{ .Chart.Name }}-job
+            image: "{{ default "deis" .Values.image.registry }}/{{ default "brig" .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+            imagePullPolicy: {{ default "IfNotPresent" .Values.image.pullPolicy }}
+            command:
+              - brig
+              - run
+              - "$(BRIGADE_PROJECT)"
+              - "--namespace=$(BRIGADE_NAMESPACE)"
+              - "--event=$(BRIGADE_EVENT)"
+              - "--ref=$(BRIGADE_REF)"
+              {{ if .Values.commit}}- "--commit=$(BRIGADE_COMMIT)"{{ end }}
+              - "--payload=/payload/payload.dat"
+              {{ if .Values.script }}- "--file=/brigade/brigade.js"{{ end }}
+            env:
+            - name: KUBECONFIG
+              value: ""
+            - name: BRIGADE_PROJECT
+              valueFrom:
+                secretKeyRef:
+                  key: project
+                  name: {{ $fullname }}
+            - name: BRIGADE_NAMESPACE
+              valueFrom:
+                secretKeyRef:
+                  key: namespace
+                  name: {{ $fullname }}
+            - name: BRIGADE_EVENT
+              valueFrom:
+                secretKeyRef:
+                  key: event
+                  name: {{ $fullname }}
+            - name: BRIGADE_REF
+              valueFrom:
+                secretKeyRef:
+                  key: ref
+                  name: {{ $fullname }}
+            {{ if .Values.commit }}
+            - name: BRIGADE_COMMIT
+              valueFrom:
+                secretKeyRef:
+                  key: commit
+                  name: {{ $fullname }}
+            {{ end }}
+            volumeMounts:
+              - mountPath: "/brigade"
+                name: brigade-config
+              - mountPath: "/payload"
+                name: shared
+          restartPolicy: OnFailure
+          volumes:
+            - name: brigade-config
+              secret:
+                secretName: {{ $fullname }}
+            - name: shared
+              emptyDir: {}
