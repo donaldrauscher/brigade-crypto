@@ -2,7 +2,7 @@
 
 Making a [Brigade](https://brigade.sh/) pipeline that streams cryptocurrency prices into BigQuery 
 
-NOTE: Instructions for setting up a K8s cluster with Brigade in 'infrastructure'
+NOTE: Instructions for setting up a K8s cluster on GKE with Brigade in 'infrastructure'
 
 1. Create Brigade project with Helm:
 ```
@@ -35,6 +35,23 @@ brig run donald/crypto -f brigade.js -n brigade
 5. Set up CronJob:
 ```
 cd cronjob && helm install . -f values.yaml --namespace brigade
+```
+
+To confirm that the cronjobs are firing:
+```
+kubectl get cronjobs -n brigade
+kubectl get jobs -n brigade
+kubectl get jobs -n brigade | grep "brigade-cron" | awk '{ if ($3 == 0) print $1, $4 }'
+kubectl describe job $(kubectl get jobs -n brigade | grep "brigade-cron" | tail -1 | awk '{ print $1 }') --namespace brigade
+```
+
+To check status of Brig builds:
+```
+export BRIG_PROJECT_ID=$(brig project list -n brigade | grep "donald/crypto" | head -1 | awk '{ print $2 }')
+export BRIG_BUILD_ID=$(brig build list -n brigade | grep "$BRIG_PROJECT_ID" | tail -1 | awk '{ print $1 }')
+brig build list -n brigade | grep "$BRIG_PROJECT_ID" | awk '{ if ($5 != "Succeeded") print $1 }'
+brig build logs $BRIG_BUILD_ID -n brigade
+kubectl logs j1-$BRIG_BUILD_ID -n brigade
 ```
 
 ===
