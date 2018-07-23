@@ -34,7 +34,7 @@ events.on("exec", (e, p) => {
 
   j1.tasks = [
     "export TIMESTAMP=${TIMESTAMP:-$(date '+%Y-%m-%dT%H:%M')}",
-    "curl https://rest.coinapi.io/v1/quotes/current?filter_symbol_id=_SPOT_ --request GET --header \"X-CoinAPI-Key: $COIN_API_KEY\" -o quotes.json",
+    "curl https://rest.coinapi.io/v1/quotes/current?filter_symbol_id=_SPOT_ --request GET --header \"X-CoinAPI-Key: $COIN_API_KEY\" --fail -o quotes.json",
     "jq --compact-output '.[]' quotes.json > quotes.ndjson",
     "gsutil cp quotes.ndjson gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson",
     "bq load --replace --source_format=NEWLINE_DELIMITED_JSON crypto.quotes gs://djr-data/crypto/$TIMESTAMP/quotes.ndjson"
